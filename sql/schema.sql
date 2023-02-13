@@ -1,0 +1,26 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE users(
+  USER_ID INT NOT NULL,
+  First_name VARCHAR(40) NOT NULL,
+  Last_name VARCHAR(40) NOT NULL,
+  Height INT NOT NULL,
+  Starting_Weight INT NOT NULL,
+  Activity_type VARCHAR(50) NOT NULL CHECK (
+    Activity_type = SEDENTARY
+    OR LIGHTLY_ACTIVE
+    OR MODERATELY_ACTIVE
+    OR VERY_ACTIVE
+    OR EXTREMELY_ACTIVE
+  ),
+  PRIMARY KEY(USER_ID)
+);
+CREATE TABLE Food_Intake(
+  USER_ID INT NOT NULL,
+  Calories INT NOT NULL,
+  created DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  Protein INT NOT NULL,
+  Carbohydrates INT NOT NULL,
+  Fats INT NOT NULL,
+  FOREIGN KEY(USER_ID) references users,
+  PRIMARY KEY(USER_ID)
+);
