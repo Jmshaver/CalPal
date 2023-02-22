@@ -123,6 +123,7 @@ def user_onboard():
         # also include a check to make sure that user is found
         # query to database to get user information about calories for the day.
         # stay stuck inl loop until user wants to leave
+        # TODO add db query to get the user's ID
         while (True):
             # this includes all food additions, food type commands, calorie asks, etc.
             print("How can I help you? ")
@@ -135,7 +136,7 @@ def user_onboard():
             # how will indicate that we either need to check the food api for calorie count or check how many calories are left
             # so user will ask "how many calories left", so "left" is the keyword for user calorie check
             if inputs.find('ate') != -1:
-                foods = api_request(inputs)
+                foods = api_request(inputs)  # TODO pass in the user's id
                 for food in foods:
                     food_name = food["food_name"]
                     cal_count = food["nf_calories"]

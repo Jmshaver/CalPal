@@ -3,7 +3,7 @@ import json
 from db import get_db
 
 
-def api_request(input):
+def api_request(input, user_id=1):
     # Nutritionix API
     end_pt_url = 'https://trackapi.nutritionix.com/v2/natural/nutrients'
     app_id = 'a68ff72b'
@@ -35,7 +35,8 @@ def api_request(input):
             connection.execute(
                 "INSERT INTO Food_Intake (USER_ID, Food_Name ,Calories,Protein,Carbohydrates,Fats ) "
                 "VALUES (? ,?, ?, ?, ?, ? ) ",
-                (1, food_name, cal_count, fat_count, protein_count, carb_count)
+                (user_id, food_name, cal_count,
+                 fat_count, protein_count, carb_count)
             )
             connection.commit()
             connection.close()
