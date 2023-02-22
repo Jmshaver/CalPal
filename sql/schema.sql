@@ -1,9 +1,6 @@
 PRAGMA foreign_keys = ON;
-
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS Food_Intake;
-
-
 CREATE TABLE users(
   USER_ID INTEGER PRIMARY KEY AUTOINCREMENT,
   First_name VARCHAR(40) NOT NULL,
@@ -11,13 +8,17 @@ CREATE TABLE users(
   Height INTEGER NOT NULL,
   Starting_Weight INT NOT NULL,
   Activity_type VARCHAR(50) NOT NULL CHECK (
-    Activity_type IN ('SEDENTARY', 'LIGHT', 'MODERATE', 'VERY', 'EXTREMELY')
+    Activity_type IN (
+      'SEDENTARY',
+      'LIGHT',
+      'MODERATE',
+      'VERY',
+      'EXTREMELY'
+    )
   ),
-  Sex VARCHAR(6) NOT NULL CHECK (
-    Sex IN ('male', 'female', 'other')
-  )
+  Sex VARCHAR(6) NOT NULL CHECK (Sex IN ('male', 'female', 'other')),
+  Calorie_goal INTEGER NOT NULL
 );
-
 CREATE TABLE Food_Intake(
   Intake_ID INTEGER PRIMARY KEY AUTOINCREMENT,
   USER_ID INTEGER NOT NULL,
