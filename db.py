@@ -16,7 +16,7 @@ def get_db():
     """ create a database connection to a SQLite database """
     ROOT = pathlib.Path(__file__).resolve().parent
     DATABASE_FILENAME = ROOT/'var'/'calpal.sqlite3'
-    print(DATABASE_FILENAME)
+    # print(DATABASE_FILENAME)
     db = sqlite3.connect(str(DATABASE_FILENAME))
     db.row_factory = dict_factory
     db.execute("PRAGMA foreign_keys = ON")
