@@ -2,7 +2,7 @@ import os
 from enum import Enum
 from db import get_db
 import sys
-
+from api import api_request
 # USE SNAKE CASE FOR ALL VARIABLES
 
 
@@ -89,7 +89,7 @@ def user_onboard():
     new_use = new_use.replace(" ", "")
     new_use = new_use.lower()
 
-    if (new_use == "yes"):
+    if (new_use == "new"):
         print("Great! Would you like to signup?")
         inputs = input()
         inputs = input.lower()
@@ -122,10 +122,10 @@ def user_onboard():
         last_name = input("Awesome. What's your last name?")
         # also include a check to make sure that user is found
         # query to database to get user information about calories for the day.
-        exit = False
         # stay stuck inl loop until user wants to leave
-        while (not exit):
+        while (True):
             # this includes all food additions, food type commands, calorie asks, etc.
+            print("How can I help you? ")
             inputs = input()
             inputs = inputs.lower()
             if (inputs == 'exit'):
@@ -135,7 +135,16 @@ def user_onboard():
             # how will indicate that we either need to check the food api for calorie count or check how many calories are left
             # so user will ask "how many calories left", so "left" is the keyword for user calorie check
             if inputs.find('ate') != -1:
-                # TODO: add query to nutritionix and add food entry
+                foods = api_request(inputs)
+                for food in foods:
+                    food_name = food["food_name"]
+                    cal_count = food["nf_calories"]
+                    fat_count = food["nf_total_fat"]
+                    protein_count = food["nf_protein"]
+                    carb_count = food["nf_total_carbohydrate"]
+                    print(f"{food_name} was logged. It was {cal_count} calories with {protein_count} grams of protien, {carb_count} grams of carbs and {fat_count} grams of fat")
+
+                # TODO tell the user how their daily goal is going
                 pass
             elif inputs.find('how') != -1:
                 if inputs.find('left') != 1:
@@ -145,6 +154,9 @@ def user_onboard():
                     # query nutritionix to find nutritional information
             elif inputs.find('update') != -1:
                 pass  # user can update their preferences/activity level/weight
+            elif inputs == "thanks calpal":
+                print("Glad to help. You are making great progress")
+                break
             else:
                 continue
             # keyword search for adding food, asking how many macros left, and asking nutritional info about food,
