@@ -3,6 +3,7 @@ from enum import Enum
 from db import get_db
 import sys
 from api import api_request
+from db import get_db
 # USE SNAKE CASE FOR ALL VARIABLES
 
 
@@ -81,7 +82,7 @@ class User:
 def user_onboard():
     # user onboard procedure, will change this to a different function later
     print("Hello")
-
+    connection = get_db()
     # parse input to screen if user needs to be enrolled
     # this should be some type of state when first connecting
     # then a constant state so we don't have to keep reverifying the user
@@ -92,7 +93,7 @@ def user_onboard():
     if (new_use == "new"):
         print("Great! Would you like to signup?")
         inputs = input()
-        inputs = input.lower()
+        inputs = inputs.lower()
         if inputs == 'no':
             print('Bye!')
             return
@@ -102,28 +103,53 @@ def user_onboard():
         first_name = input(
             "Welcome! To get started off, what is your first name?")
         last_name = input("Great! Now what is your last name?")
-        sex = input("What is you sex? Male/Female/NA")
-        sex = sex.lower()
-        if sex == 'na':
-            sex = 'male'
+
+        sex = None
+        while sex not in ['male', 'female', 'other']:
+            sex = input("What is you sex? Male/Female/NA")
+            sex = sex.lower()
+
         height = int(input("Awesome. Next, what is your height in inches?"))
         starting_weight = int(input("What is your current weight in lbs?"))
-        Activity_type = int(input(
-            "How active would you say you are? 1. Sedentary: 0-1 days, 2. Light: 1-3 days, 3. Moderate: 3-4 days, 4. Very: 4-5 days, 5.  Extremely:5-7 days?"))
+
+        activity_type = None
+        while activity_type not in [1, 2, 3, 4, 5]:
+            activity_type = int(input(
+                "How active would you say you are? 1. Sedentary: 0-1 days, 2. Light: 1-3 days, 3. Moderate: 3-4 days, 4. Very: 4-5 days, 5.  Extremely:5-7 days?"))
+        activity_type = ['SEDENTARY', 'LIGHT', 'MODERATE',
+                         'VERY', 'EXTREMELY'][activity_type]
+
         # For men: BMR = 66.5 + (13.75 × weight in kg) + (5.003 × height in cm) - (6.75 × age)
         # For women: BMR = 655.1 + (9.563 × weight in kg) + (1.850 × height in cm) - (4.676 × age)
         # Sedentary (little or no exercise): calories = BMR × 1.2;
         # Lightly active (light exercise/sports 1-3 days/week): calories = BMR × 1.375;
-#       Moderately active (moderate exercise/sports 3-5 days/week): calories = BMR × 1.55;
+        # Moderately active (moderate exercise/sports 3-5 days/week): calories = BMR × 1.55;
         # Very active (hard exercise/sports 6-7 days a week): calories = BMR × 1.725; and
         # If you are extra active (very hard exercise/sports & a physical job): calories = BMR × 1.9.
+
+        # TODO add user's real info
+        insert_query = "INSERT INTO users (First_name, Last_name, Height, Starting_Weight, Activity_type, Sex, Calorie_goal) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        values = ('John', 'Doe', 180, 200, 'MODERATE', 'male', 2500)
+        connection.execute(insert_query, values)
+        connection.commit()
+
+        print("Account Created. Welcome to CalPal")
+
     else:
+
         first_name = input("Welcome Back! What's your first name?")
         last_name = input("Awesome. What's your last name?")
         # also include a check to make sure that user is found
         # query to database to get user information about calories for the day.
         # stay stuck inl loop until user wants to leave
-        # TODO add db query to get the user's ID
+
+        insert_query = "SELECT USER_ID FROM users WHERE First_name = ? AND Last_name = ?"
+        values = (first_name, last_name)
+        user = connection.execute(insert_query, values).fetchone()
+        if user is None:
+            print('You are not in the database please sign up')
+
+        user_id = user['USER_ID']
         while (True):
             # this includes all food additions, food type commands, calorie asks, etc.
             print("How can I help you? ")
@@ -136,31 +162,52 @@ def user_onboard():
             # how will indicate that we either need to check the food api for calorie count or check how many calories are left
             # so user will ask "how many calories left", so "left" is the keyword for user calorie check
             if inputs.find('ate') != -1:
-                foods = api_request(inputs)  # TODO pass in the user's id
+                foods = api_request(inputs)
+
                 for food in foods:
                     food_name = food["food_name"]
                     cal_count = food["nf_calories"]
                     fat_count = food["nf_total_fat"]
                     protein_count = food["nf_protein"]
                     carb_count = food["nf_total_carbohydrate"]
+                    connection.execute(
+                        "INSERT INTO Food_Intake (USER_ID, Food_Name ,Calories,Protein,Carbohydrates,Fats ) "
+                        "VALUES (? ,?, ?, ?, ?, ? ) ",
+                        (user_id, food_name, cal_count,
+                         fat_count, protein_count, carb_count)
+                    )
+                    connection.commit()
                     print(f"{food_name} was logged. It was {cal_count} calories with {protein_count} grams of protien, {carb_count} grams of carbs and {fat_count} grams of fat")
 
                 # TODO tell the user how their daily goal is going
                 pass
             elif inputs.find('how') != -1:
-                if inputs.find('left') != 1:
-                    pass  # query use database to find remaining calories and macros
+                if inputs.find('left') != -1:
+                    pass  # TODO query use database to find remaining calories and macros
                 else:
-                    pass
-                    # query nutritionix to find nutritional information
+                    # TODO input needs to be modified so the api does not return 1 calorie
+                    foods = api_request(inputs)
+
+                    for food in foods:
+                        food_name = food["food_name"]
+                        cal_count = food["nf_calories"]
+                        fat_count = food["nf_total_fat"]
+                        protein_count = food["nf_protein"]
+                        carb_count = food["nf_total_carbohydrate"]
+
+                        print(
+                            f"{food_name} has {cal_count} calories with {protein_count} grams of protien, {carb_count} grams of carbs and {fat_count} grams of fat")
+
             elif inputs.find('update') != -1:
-                pass  # user can update their preferences/activity level/weight
+                pass  # TODO user can update their preferences/activity level/weight
             elif inputs == "thanks calpal":
                 print("Glad to help. You are making great progress")
                 break
             else:
+                print(
+                    "I don't understand what you are trying to do. Say 'Thanks CalPal to Exit'")
                 continue
-            # keyword search for adding food, asking how many macros left, and asking nutritional info about food,
+            # TODO keyword search for adding food, asking how many macros left,
 
 
 def main():

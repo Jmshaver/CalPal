@@ -17,7 +17,8 @@ CREATE TABLE users(
     )
   ),
   Sex VARCHAR(6) NOT NULL CHECK (Sex IN ('male', 'female', 'other')),
-  Calorie_goal INTEGER NOT NULL
+  Calorie_goal INTEGER NOT NULL,
+  UNIQUE(First_name, Last_name)
 );
 CREATE TABLE Food_Intake(
   Intake_ID INTEGER PRIMARY KEY AUTOINCREMENT,

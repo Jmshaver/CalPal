@@ -1,9 +1,8 @@
 import requests
 import json
-from db import get_db
 
 
-def api_request(input, user_id=1):
+def api_request(input):
     # Nutritionix API
     end_pt_url = 'https://trackapi.nutritionix.com/v2/natural/nutrients'
     app_id = 'a68ff72b'
@@ -23,24 +22,9 @@ def api_request(input, user_id=1):
         data = json.loads(r.text)
         #new_string = json.dumps(data,indent=2)
         # print(new_string)
-        connection = get_db()
 
-        for foods in data["foods"]:
-            food_name = foods["food_name"]
-            cal_count = foods["nf_calories"]
-            fat_count = foods["nf_total_fat"]
-            protein_count = foods["nf_protein"]
-            carb_count = foods["nf_total_carbohydrate"]
+        return data["foods"]
 
-            connection.execute(
-                "INSERT INTO Food_Intake (USER_ID, Food_Name ,Calories,Protein,Carbohydrates,Fats ) "
-                "VALUES (? ,?, ?, ?, ?, ? ) ",
-                (user_id, food_name, cal_count,
-                 fat_count, protein_count, carb_count)
-            )
-            connection.commit()
-            connection.close()
-            return data["foods"]
     except requests.exceptions.HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')
     except Exception as err:
