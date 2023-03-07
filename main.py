@@ -4,11 +4,14 @@ from db import get_db
 import sys
 from api import api_request
 from db import get_db
+
+
 # USE SNAKE CASE FOR ALL VARIABLES
 
 
 class State(Enum):
     START = 1
+
 
 # create a class to process user boarding process, record their
 # name, sex, height, weight and activity level
@@ -32,7 +35,9 @@ class User:
 
     # return userinfo
     def __str__(self):
-        return str(self.first_name + ' ' + self.last_name + ' ' + self.age + ' ' + self.sex + ' ' + self.height + ' ' + self.weight + ' ' + self.activity_level)
+        return str(
+            self.first_name + ' ' + self.last_name + ' ' + self.age + ' ' + self.sex + ' ' + self.height + ' ' + self.weight + ' ' + self.activity_level)
+
     # getters portion
 
     def get_first_name(self):
@@ -55,6 +60,7 @@ class User:
 
     def get_activity_level(self):
         return self.activity_level
+
     # setters portion
 
     def update_first_name(self, first_name):
@@ -111,6 +117,8 @@ def user_onboard():
 
         height = int(input("Awesome. Next, what is your height in inches?"))
         starting_weight = int(input("What is your current weight in lbs?"))
+        # TODO: age can change over time, so we should update it every day, we use age now but in long run this should be a date
+        age = int(input("How old are you?"))
 
         activity_type = None
         while activity_type not in [1, 2, 3, 4, 5]:
@@ -118,18 +126,10 @@ def user_onboard():
                 "How active would you say you are? 1. Sedentary: 0-1 days, 2. Light: 1-3 days, 3. Moderate: 3-4 days, 4. Very: 4-5 days, 5.  Extremely:5-7 days?"))
         activity_type = ['SEDENTARY', 'LIGHT', 'MODERATE',
                          'VERY', 'EXTREMELY'][activity_type]
-
-        # For men: BMR = 66.5 + (13.75 × weight in kg) + (5.003 × height in cm) - (6.75 × age)
-        # For women: BMR = 655.1 + (9.563 × weight in kg) + (1.850 × height in cm) - (4.676 × age)
-        # Sedentary (little or no exercise): calories = BMR × 1.2;
-        # Lightly active (light exercise/sports 1-3 days/week): calories = BMR × 1.375;
-        # Moderately active (moderate exercise/sports 3-5 days/week): calories = BMR × 1.55;
-        # Very active (hard exercise/sports 6-7 days a week): calories = BMR × 1.725; and
-        # If you are extra active (very hard exercise/sports & a physical job): calories = BMR × 1.9.
-
+        calorie_goal = calculate_intake(height, starting_weight, age, sex, activity_type)
         # TODO add user's real info
-        insert_query = "INSERT INTO users (First_name, Last_name, Height, Starting_Weight, Activity_type, Sex, Calorie_goal) VALUES (?, ?, ?, ?, ?, ?, ?)"
-        values = ('John', 'Doe', 180, 200, 'MODERATE', 'male', 2500)
+        insert_query = "INSERT INTO users (First_name, Last_name, Height, Starting_Weight, Age, Activity_type, Sex, Calorie_goal) VALUES (?, ?, ?, ?, ?, ?, ?,?)"
+        values = (first_name, last_name, height, starting_weight, age, activity_type, sex, calorie_goal)
         connection.execute(insert_query, values)
         connection.commit()
 
@@ -177,7 +177,8 @@ def user_onboard():
                          fat_count, protein_count, carb_count)
                     )
                     connection.commit()
-                    print(f"{food_name} was logged. It was {cal_count} calories with {protein_count} grams of protien, {carb_count} grams of carbs and {fat_count} grams of fat")
+                    print(
+                        f"{food_name} was logged. It was {cal_count} calories with {protein_count} grams of protein, {carb_count} grams of carbs and {fat_count} grams of fat")
 
                 # TODO tell the user how their daily goal is going
                 pass
@@ -208,6 +209,47 @@ def user_onboard():
                     "I don't understand what you are trying to do. Say 'Thanks CalPal to Exit'")
                 continue
             # TODO keyword search for adding food, asking how many macros left,
+
+
+'''
+Requires: stats of a user. Their height, weight, age, and activity level to calculate their daily calorie intake
+Modifies: Nothing
+Effects: Returns the daily calorie intake of the user
+'''
+
+
+def calculate_intake(height, weight, age, sex, activity_level):
+    # For men: BMR = 66.5 + (13.75 × weight in kg) + (5.003 × height in cm) - (6.75 × age)
+    # For women: BMR = 655.1 + (9.563 × weight in kg) + (1.850 × height in cm) - (4.676 × age)
+    # Sedentary (little or no exercise): calories = BMR × 1.2;
+    # Lightly active (light exercise/sports 1-3 days/week): calories = BMR × 1.375;
+    # Moderately active (moderate exercise/sports 3-5 days/week): calories = BMR × 1.55;
+    # Very active (hard exercise/sports 6-7 days a week): calories = BMR × 1.725; and
+    # If you are extra active (very hard exercise/sports & a physical job): calories = BMR × 1.9.
+
+    # first we need to convert height and weight to metric
+    height = height * 2.54
+    weight = weight * 0.453592
+
+    # calculate BMR
+    bmr = 0
+    if sex == "male":
+        bmr = 66.5 + (13.75 * weight) + (5.003 * height) - (6.75 * age)
+    # default to use female otherwise
+    else:
+        bmr = 655.1 + (9.563 * weight) + (1.850 * height) - (4.676 * age)
+
+    # calculate calorie intake
+    if activity_level == "SEDENTARY":
+        return bmr * 1.2
+    elif activity_level == "LIGHT":
+        return bmr * 1.375
+    elif activity_level == "MODERATE":
+        return bmr * 1.55
+    elif activity_level == "VERY":
+        return bmr * 1.725
+    else:
+        return bmr * 1.9
 
 
 def main():

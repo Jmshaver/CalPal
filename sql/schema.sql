@@ -7,6 +7,7 @@ CREATE TABLE users(
   Last_name VARCHAR(40) NOT NULL,
   Height INTEGER NOT NULL,
   Starting_Weight INT NOT NULL,
+  Age INT NOT NULL,
   Activity_type VARCHAR(50) NOT NULL CHECK (
     Activity_type IN (
       'SEDENTARY',

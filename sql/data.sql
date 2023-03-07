@@ -4,11 +4,12 @@ INSERT INTO users (
     Last_name,
     Height,
     Starting_Weight,
+    Age,
     Activity_type,
     Sex,
     Calorie_goal
   )
-VALUES ('Jay', 'S', 72, 180, 'SEDENTARY', 'male', 3000);
+VALUES ('Jay', 'S', 72, 180, 20, 'SEDENTARY', 'male', 3000);
 INSERT INTO Food_Intake(
     USER_ID,
     Food_name,
