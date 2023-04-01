@@ -3,7 +3,6 @@ from db import get_db
 from calpal import CalPal
 connection = get_db()
 
-
 def calculate_intake(height, weight, age, sex, activity_level):
     # For men: BMR = 66.5 + (13.75 × weight in kg) + (5.003 × height in cm) - (6.75 × age)
     # For women: BMR = 655.1 + (9.563 × weight in kg) + (1.850 × height in cm) - (4.676 × age)

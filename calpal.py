@@ -5,7 +5,7 @@ from db import get_db
 import datetime
 connection = get_db()
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer('multi-qa-MiniLM-L6-dot-v1')
 
 
 class CalPal:
@@ -38,6 +38,9 @@ class CalPal:
 
     def ate_food_intent(self, input_phrase):
         foods = api_request(input_phrase)
+        if len(foods):
+            print("idk that food")
+            return
         for food in foods:
             food_name = food["food_name"]
             cal_count = food["nf_calories"]
