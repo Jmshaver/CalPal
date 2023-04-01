@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# resetdb
+#
+# List files and folders, followed by a count
+
+# Stop on errors, print commands
+# See https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
+set -Eeuo pipefail
+set -x
+
+rm -rf var/calpal.sqlite3 var/uploads
+sqlite3 var/calpal.sqlite3 < sql/schema.sql
+sqlite3 var/calpal.sqlite3 < sql/data.sql
