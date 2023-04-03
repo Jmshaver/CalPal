@@ -17,7 +17,7 @@ class CalPal:
         self.threshold = threshold
         # print(self.intent_df.head())
         self.intent_embeddings = model.encode(self.intent_df['phrase'])
-    
+
     def calculate_intake(height, weight, age, sex, activity_level, dietType):
         # For men: BMR = 66.5 + (13.75 × weight in kg) + (5.003 × height in cm) - (6.75 × age)
         # For women: BMR = 655.1 + (9.563 × weight in kg) + (1.850 × height in cm) - (4.676 × age)
@@ -52,7 +52,7 @@ class CalPal:
             bmr *= 1.9
         if dietType == "BALANCED":
             protein_goal = 0.65*(weight/0.453592)
-            fat_goal = (0.3 *  bmr) / 9
+            fat_goal = (0.3 * bmr) / 9
             carb_goal = (bmr - fat_goal*9 - protein_goal*4) / 4
         elif dietType == "HIGH PROTEIN":
             protein_goal = (weight/0.453592)
@@ -64,6 +64,7 @@ class CalPal:
             carb_goal = (bmr - fat_goal*9 - protein_goal*4) / 4
 
         return bmr, protein_goal, fat_goal, carb_goal
+
     def get_intent(self, phrase):
         sentence_embedding = model.encode(phrase)
         # Print the embeddings
@@ -128,10 +129,10 @@ class CalPal:
 
         activity_type = None
         options = ['sedentary',
-                'light',
-                'moderate',
-                'very',
-                'extremely']
+                   'light',
+                   'moderate',
+                   'very',
+                   'extremely']
         while activity_type not in options:
             speak("How active would you say you are? 1. Sedentary: 0-1 days, 2. Light: 1-3 days, 3. Moderate: 3-4 days, 4. Very: 4-5 days, 5.  Extremely:5-7 days?")
             activity_type = get_audio()
@@ -141,14 +142,17 @@ class CalPal:
         dietType = None
         options_diet = ['balanced', 'high protein', 'low carb']
         while dietType not in options_diet:
-            speak('What Kind of Diet would you like to have? 1. Balanced, 2. High Protein, 3. Low Carb ')
+            speak(
+                'What Kind of Diet would you like to have? 1. Balanced, 2. High Protein, 3. Low Carb ')
             dietType = get_audio()
             print(dietType)
             print(options_diet)
         dietType = dietType.upper()
-        calorie_goal, protein_goal, fat_goal, carb_goal =  self.calculate_intake(height, starting_weight, age, sex, activity_type, dietType)
+        calorie_goal, protein_goal, fat_goal, carb_goal = self.calculate_intake(
+            height, starting_weight, age, sex, activity_type, dietType)
 
-        connection.execute("UPDATE users SET Height = ? , Starting_Weight = ?, Age = ?, Activity_type = ?, Sex = ?, Calorie_goal = ?, Diet_type = ?, Protein_goal = ?, Fat_goal=? , Carb_goal = ? WHERE USER_ID = ? ", (height, starting_weight, age,activity_type, sex, calorie_goal, dietType, protein_goal, fat_goal, carb_goal))
+        connection.execute("UPDATE users SET Height = ? , Starting_Weight = ?, Age = ?, Activity_type = ?, Sex = ?, Calorie_goal = ?, Diet_type = ?, Protein_goal = ?, Fat_goal=? , Carb_goal = ? WHERE USER_ID = ? ",
+                           (height, starting_weight, age, activity_type, sex, calorie_goal, dietType, protein_goal, fat_goal, carb_goal))
         connection.commit()
         speak("User information successfully updated")
 
@@ -231,6 +235,8 @@ class CalPal:
             self.food_lookup_intent(input_phrase)
         elif intent == 4:  # example: what foods have I eaten today
             self.list_eaten_foods_intent()
+        elif intent == 5:
+            self.update_info_intent()
 
 
 def main():
