@@ -8,7 +8,7 @@ connection = get_db()
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 
-def calculate_intake(height, weight, age, sex, activity_level):
+def calculate_intake(height, weight, age, sex, activity_level, dietType):
     # For men: BMR = 66.5 + (13.75 × weight in kg) + (5.003 × height in cm) - (6.75 × age)
     # For women: BMR = 655.1 + (9.563 × weight in kg) + (1.850 × height in cm) - (4.676 × age)
     # Sedentary (little or no exercise): calories = BMR × 1.2;
@@ -31,15 +31,29 @@ def calculate_intake(height, weight, age, sex, activity_level):
 
     # calculate calorie intake
     if activity_level == "SEDENTARY":
-        return bmr * 1.2
+        bmr *= 1.2
     elif activity_level == "LIGHT":
-        return bmr * 1.375
+        bmr *= 1.375
     elif activity_level == "MODERATE":
-        return bmr * 1.55
+        bmr *= 1.55
     elif activity_level == "VERY":
-        return bmr * 1.725
+        bmr *= 1.725
     else:
-        return bmr * 1.9
+        bmr *= 1.9
+    if dietType == "BALANCED":
+        protein_goal = 0.65*(weight/0.453592)
+        fat_goal = (0.3 *  bmr) / 9
+        carb_goal = (bmr - fat_goal*9 - protein_goal*4) / 4
+    elif dietType == "HIGH PROTEIN":
+        protein_goal = (weight/0.453592)
+        fat_goal = (0.3*bmr) / 9
+        carb_goal = (bmr - fat_goal*9 - protein_goal*4) / 4
+    else:
+        protein_goal = 0.8*(weight/0.453592)
+        fat_goal = (0.45*bmr) / 9
+        carb_goal = (bmr - fat_goal*9 - protein_goal*4) / 4
+
+    return bmr, protein_goal, fat_goal, carb_goal
 
 
 def user_onboard(first_name, last_name):
@@ -71,11 +85,17 @@ def user_onboard(first_name, last_name):
         print(activity_type)
         print(options)
     activity_type = activity_type.upper()
-    calorie_goal = calculate_intake(
-        height, starting_weight, age, sex, activity_type)
-    insert_query = "INSERT INTO users (First_name, Last_name, Height, Starting_Weight, Age, Activity_type, Sex, Calorie_goal) VALUES (?, ?, ?, ?, ?, ?, ?,?)"
-    values = (first_name, last_name, height, starting_weight,
-              age, activity_type, sex, calorie_goal)
+    dietType = None
+    options_diet = ['balanced', 'high protein', 'low carb']
+    while dietType not in options_diet:
+        speak('What Kind of Diet would you like to have? 1. Balanced, 2. High Protein, 3. Low Carb ')
+        dietType = get_audio()
+        print(dietType)
+        print(options_diet)
+    dietType = dietType.upper()
+    calorie_goal, protein_goal, fat_goal, carb_goal = calculate_intake(height, starting_weight, age, sex, activity_type, dietType)
+    insert_query = "INSERT INTO users (First_name, Last_name, Height, Starting_Weight, Age, Activity_type, Sex, Calorie_goal, Diet_type, Protein_goal, Fat_goal, Carb_goal) VALUES (?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)"
+    values = (first_name, last_name, height, starting_weight, age, activity_type, sex, calorie_goal, dietType, protein_goal, fat_goal, carb_goal)
     connection.execute(insert_query, values)
     connection.commit()
 
@@ -127,3 +147,4 @@ if __name__ == "__main__":
             break
         else:
             calpal.handle_intent(intent, input_phrase)
+

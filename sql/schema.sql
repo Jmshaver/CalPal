@@ -19,6 +19,16 @@ CREATE TABLE users(
   ),
   Sex VARCHAR(6) NOT NULL CHECK (Sex IN ('male', 'female', 'other')),
   Calorie_goal INTEGER NOT NULL,
+  Diet_type VARCHAR(50) NOT NULL CHECK (
+    Diet_type IN (
+      'BALANCED',
+      'HIGH PROTEIN',
+      'LOW CARB',
+    )
+  ),
+  Protein_goal INTEGER NOT NULL,
+  Fat_goal INTEGER NOT NULL,
+  Carb_goal INTEGER NOT NULL,
   UNIQUE(First_name, Last_name)
 );
 CREATE TABLE Food_Intake(

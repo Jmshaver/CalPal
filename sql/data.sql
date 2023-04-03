@@ -7,7 +7,11 @@ INSERT INTO users (
     Activity_type,
     Sex,
     Calorie_goal,
-    Age
+    Age,
+    Diet_type,
+    Protein_goal,
+    Fat_goal,
+    Carb_goal
   )
 VALUES (
     'Jay',
@@ -17,7 +21,11 @@ VALUES (
     'SEDENTARY',
     'male',
     3000,
-    15
+    15,
+    "BALANCED",
+    117,
+    100,
+    408
   );
 INSERT INTO Food_Intake(
     USER_ID,
