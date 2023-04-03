@@ -2,6 +2,7 @@ from sentence_transformers import util, SentenceTransformer
 import pandas as pd
 from api import api_request
 from db import get_db
+from speak import speak
 import datetime
 connection = get_db()
 
@@ -38,9 +39,10 @@ class CalPal:
 
     def ate_food_intent(self, input_phrase):
         foods = api_request(input_phrase)
-        if len(foods):
-            print("idk that food")
+        if (not isinstance(foods, list)) or len(foods) == 0:
+            speak("i don't know that food")
             return
+        outputs = []
         for food in foods:
             food_name = food["food_name"]
             cal_count = food["nf_calories"]
@@ -53,18 +55,23 @@ class CalPal:
                 (self.user_id, food_name, cal_count,
                     fat_count, protein_count, carb_count)
             )
+            print((self.user_id, food_name, cal_count,
+                   fat_count, protein_count, carb_count))
             connection.commit()
-            print(
+            outputs.append(
                 f"{food_name} was logged. It was {cal_count} calories with {protein_count} grams of protein, {carb_count} grams of carbs and {fat_count} grams of fat")
+        speak(outputs)
 
     def current_progress_intent(self):
+        # datetime seem to take computer timezone while sql uses gmt
+        # this means 8pm to 4am will have errors
         today = datetime.date.today()
         macro_info = connection.execute("SELECT SUM(Protein) as protein,  SUM(Carbohydrates) as carbs,  SUM(Fats) as fats FROM Food_Intake "
                                         "WHERE date(CREATED) = ? AND USER_ID = ?", (today, self.user_id)).fetchone()
 
         # check if the user has eaten anything
         if macro_info['fats'] is None:
-            print("You have not eaten anything today")
+            speak("You have not eaten anything today")
             return
 
         user_calorie_goal = connection.execute(
@@ -75,15 +82,15 @@ class CalPal:
         user_calorie_goal = round(user_calorie_goal)
         calories_eaten_today = round(calories_eaten_today)
         if user_calorie_goal - calories_eaten_today >= 0:
-            print(
+            speak(
                 f"Your goal is {user_calorie_goal} calories and you have eaten {calories_eaten_today} calories you have {user_calorie_goal - calories_eaten_today} calories to go. Keep it up!")
         else:
-            print(
+            speak(
                 f"Your goal is {user_calorie_goal} calories and you have eaten {calories_eaten_today} calories you are over by { calories_eaten_today - user_calorie_goal} calories.")
-        print("Your macros are")
-        print(f"Protein: {macro_info['protein']}g")
-        print(f"Carbohydrates: {macro_info['carbs']}g")
-        print(f"Fats: {macro_info['fats']}g")
+        speak("Your macros are")
+        speak(f"Protein: {macro_info['protein']}g")
+        speak(f"Carbohydrates: {macro_info['carbs']}g")
+        speak(f"Fats: {macro_info['fats']}g")
 
     def food_lookup_intent(self, input_phrase):
         inputs = input_phrase.replace("how", "").replace(
@@ -92,7 +99,7 @@ class CalPal:
         foods = api_request(inputs)
 
         if isinstance(foods, int):
-            print("Sorry cant find that food")
+            speak("Sorry cant find that food")
             return
 
         for food in foods:
@@ -102,24 +109,28 @@ class CalPal:
             protein_count = food["nf_protein"]
             carb_count = food["nf_total_carbohydrate"]
 
-            print(
+            speak(
                 f"{food_name} has {cal_count} calories with {protein_count} grams of protien, {carb_count} grams of carbs and {fat_count} grams of fat")
 
     def list_eaten_foods_intent(self):
+        # datetime seem to take computer timezone while sql uses gmt
+        # this means 8pm to 4am will have errors
         today = datetime.date.today()
         foods = connection.execute("SELECT Food_name FROM Food_Intake "
                                    "WHERE date(CREATED) = ? AND USER_ID = ?", (today, self.user_id)).fetchall()
         if len(foods) == 0:
-            print("You have not eaten anything today")
+            speak("You have not eaten anything today")
             return
-        print("You have eaten")
+        speak("You have eaten")
+        output = []
         for food in foods:
-            print(food['Food_name'])
+            output.append(food['Food_name'])
+        speak(','.join(output))
 
     def handle_intent(self, intent, input_phrase):
         # print("handling intent ", intent)
         if intent == -1:
-            print("Sorry I don't understand what you are asking")
+            speak("Sorry I don't understand what you are asking")
         elif intent == 0:  # exit calpal
             print("This should never be called")
         elif intent == 1:  # example: I just ate a whopper
