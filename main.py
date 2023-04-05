@@ -102,6 +102,7 @@ def user_onboard(first_name, last_name):
     user_id = connection.execute(
         "SELECT USER_ID FROM users WHERE First_name = ? AND Last_name = ?", (first_name, last_name)).fetchone()['USER_ID']
     speak("Account Created. Welcome to CalPal")
+    speak("Your daily goals are {} calories, {} grams of protein, {} grams of fat, {} grams of carbohydrates".format(calorie_goal, protein_goal, fat_goal,carb_goal))
 
     return user_id
 

@@ -154,7 +154,7 @@ class CalPal:
         connection.execute("UPDATE users SET Height = ? , Starting_Weight = ?, Age = ?, Activity_type = ?, Sex = ?, Calorie_goal = ?, Diet_type = ?, Protein_goal = ?, Fat_goal=? , Carb_goal = ? WHERE USER_ID = ? ",
                            (height, starting_weight, age, activity_type, sex, calorie_goal, dietType, protein_goal, fat_goal, carb_goal))
         connection.commit()
-        speak("User information successfully updated")
+        speak("User information successfully updated. Your new daily goals are {} calories, {} grams of protein, {} grams of fat, {} grams of carbohydrates".format(calorie_goal, protein_goal, fat_goal,carb_goal))
 
     def current_progress_intent(self):
         # datetime seem to take computer timezone while sql uses gmt
@@ -168,8 +168,8 @@ class CalPal:
             speak("You have not eaten anything today")
             return
 
-        user_calorie_goal = connection.execute(
-            "SELECT Calorie_goal FROM users WHERE USER_ID = ?", (self.user_id,)).fetchone()['Calorie_goal']
+        user_calorie_goal, protein_goal, fat_goal, carb_goal = connection.execute(
+            "SELECT Calorie_goal, Protein_goal, Fat_goal, Carb_goal FROM users WHERE USER_ID = ?", (self.user_id,)).fetchone()['Calorie_goal', 'Protein_goal', 'Fat_goal', 'Carb_goal']
         calories_eaten_today = connection.execute("SELECT SUM(Calories) as total FROM Food_Intake "
                                                   "WHERE date(CREATED) = ? AND USER_ID = ?", (today, self.user_id)).fetchone()['total']
 
@@ -182,9 +182,9 @@ class CalPal:
             speak(
                 f"Your goal is {user_calorie_goal} calories and you have eaten {calories_eaten_today} calories you are over by { calories_eaten_today - user_calorie_goal} calories.")
         speak("Your macros are")
-        speak(f"Protein: {macro_info['protein']}g")
-        speak(f"Carbohydrates: {macro_info['carbs']}g")
-        speak(f"Fats: {macro_info['fats']}g")
+        speak(f"Protein: {macro_info['protein']}g out of {protein_goal}g")
+        speak(f"Carbohydrates: {macro_info['carbs']}g out of {carb_goal}g")
+        speak(f"Fats: {macro_info['fats']}g out of {fat_goal}g")
 
     def food_lookup_intent(self, input_phrase):
         inputs = input_phrase.replace("how", "").replace(
