@@ -23,7 +23,7 @@ CREATE TABLE users(
     Diet_type IN (
       'BALANCED',
       'HIGH PROTEIN',
-      'LOW CARB',
+      'LOW CARB'
     )
   ),
   Protein_goal INTEGER NOT NULL,
